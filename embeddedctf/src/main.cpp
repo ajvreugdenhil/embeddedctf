@@ -5,9 +5,11 @@
 #ifdef FLAGLESS
 #define BLINKFLAG "ECTF{FLAGLESS}"
 #define UARTFLAG "ECTF{FLAGLESS}"
+#define BOFFLAG "ECTF{FLAGLESS}"
 #else
-#define BLINKFLAG "ECTF{TODO}"
-#define UARTFLAG "ECTF{TODO}"
+#define BLINKFLAG "ECTF{BLINK}"
+#define UARTFLAG "ECTF{UART}"
+#define BOFFLAG "ECTF{BOF}"
 #endif
 
 #define UARTKEY "TODO"
@@ -16,9 +18,15 @@
 
 unsigned int previous_tick = 0;
 
+void print_bof_flag()
+{
+  Serial.println(BOFFLAG);
+}
+
 void setup() {
   Serial.begin(57600);
   pinMode(BLINKLED, OUTPUT);
+  Serial.printf("An interesting function can be found at 0x%lx", print_bof_flag);
 }
 
 void tick_blink()
@@ -38,7 +46,7 @@ void tick_uart()
     char b = Serial.read();
     if (b != '\n')
     {
-      uart_buffer[uart_buffer_len] = b;
+      uart_buffer[uart_buffer_len] = b; // Intentionally vulnerable
       uart_buffer_len += 1;
       Serial.print(b);
     }
