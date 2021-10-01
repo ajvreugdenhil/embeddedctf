@@ -26,7 +26,7 @@ void print_bof_flag()
 void setup() {
   Serial.begin(57600);
   pinMode(BLINKLED, OUTPUT);
-  Serial.printf("An interesting function can be found at 0x%lx", print_bof_flag);
+  Serial.printf("An interesting function can be found at 0x%lx", &print_bof_flag);
 }
 
 void tick_blink()
