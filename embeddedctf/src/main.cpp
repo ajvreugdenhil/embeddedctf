@@ -23,7 +23,8 @@ void print_bof_flag()
   Serial.println(BOFFLAG);
 }
 
-void setup() {
+void setup()
+{
   Serial.begin(57600);
   pinMode(BLINKLED, OUTPUT);
   Serial.printf("An interesting function can be found at 0x%lx", &print_bof_flag);
@@ -33,8 +34,8 @@ void tick_blink()
 {
   char blink_flag[] = BLINKFLAG;
   int blink_flag_length = strlen(blink_flag);
-  int step = (millis()/100) % (blink_flag_length * 8);
-  pinMode(BLINKLED, ((blink_flag[((int)step/8)] >> (step%8))) & 1);
+  int step = (millis() / 100) % (blink_flag_length * 8);
+  pinMode(BLINKLED, ((blink_flag[((int)step / 8)] >> (step % 8))) & 1);
 }
 
 char uart_buffer[127] = {0x41};
@@ -64,13 +65,14 @@ void tick_uart()
         Serial.print(uart_buffer);
         Serial.print("' \n-> ");
       }
-      
+
       uart_buffer_len = 0;
     }
   }
 }
 
-void loop() {
+void loop()
+{
   tick_blink();
   tick_uart();
 }
