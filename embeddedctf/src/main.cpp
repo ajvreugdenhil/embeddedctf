@@ -1,5 +1,9 @@
 #include <Arduino.h>
 
+#include <ESP8266WiFi.h>
+#include <ESP8266HTTPClient.h>
+#include <WiFiClient.h>
+
 #define FLAGLESS 1
 
 #ifdef FLAGLESS
@@ -7,11 +11,13 @@
 #define UARTFLAG "ECTF{PLACEHOLDER}"
 #define UNDOCUMENTEDUARTFLAG "ECTF{PLACEHOLDER}"
 #define BOFFLAG "ECTF{PLACEHOLDER}"
+#define NETWORKFLAG "ECTF{PLACEHOLDER}"
 #else
 #define BLINKFLAG "ECTF{BLINK}"
 #define UARTFLAG "ECTF{UART}"
 #define UNDOCUMENTEDUARTFLAG "ECTF{UNDOC_UART}"
 #define BOFFLAG "ECTF{BOF}"
+#define NETWORKFLAG "ECTF{NW}"
 #endif
 
 #define UARTKEY "TODO"
@@ -44,9 +50,11 @@ void shell_help()
 {
   Serial.println("Available commands:");
   Serial.println("help");
-  Serial.println("networkcheck");
+  Serial.println("*networkcheck <ssid> <password>");
   Serial.println("showuartflag");
-  Serial.println("i2ctest");
+  Serial.println("*i2ctest");
+  Serial.println("");
+  Serial.println("commands marked with * may block");
 }
 
 void shell_uart_flag()
@@ -54,9 +62,56 @@ void shell_uart_flag()
   Serial.println(UARTFLAG);
 }
 
-void shell_network_check()
+void shell_network_check(char *user_input)
 {
-  Serial.println("This part of the ctf is WIP");
+  WiFi.disconnect(true);
+
+  const int user_input_max = 64;
+  char ignored[user_input_max];
+  char ssid[user_input_max];
+  char password[user_input_max];
+  sscanf(user_input, "%s %s %s", ignored, ssid, password);
+
+  Serial.print("Connecting to '");
+  Serial.print(ssid);
+  Serial.print("' with password '");
+  Serial.print(password);
+  Serial.println("'");
+
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting to AP");
+
+  int i = 0; // Easy way to timeout the connection
+  while ((WiFi.status() != WL_CONNECTED) && i < 60)
+  {
+    delay(500);
+    Serial.print(".");
+    i++;
+  }
+
+  Serial.println("");
+  Serial.print("Connected to WiFi network with IP Address: ");
+  Serial.println(WiFi.localIP());
+
+  if (WiFi.status() == WL_CONNECTED)
+  {
+    WiFiClient client;
+    HTTPClient http;
+    Serial.println("Trying to contact remote server...");
+
+    const int remote_len = 80;
+    char remote[remote_len];
+    snprintf(remote, remote_len, "http://binpurple.student.fhict.nl?flag=%s", NETWORKFLAG);
+    http.begin(client, remote);
+    // TODO: act like this request isn't entirely full of shit
+    http.GET();
+    Serial.println("Remote server seems to be offline.");
+    WiFi.disconnect(true);
+  }
+  else
+  {
+    Serial.println("Could not connect!");
+  }
 }
 
 void shell_i2c_test()
@@ -85,15 +140,15 @@ void tick_uart()
       {
         shell_help();
       }
-      else if (strncmp(uart_buffer, "networkcheck", 13) == 0)
+      else if (strncmp(uart_buffer, "networkcheck", 12) == 0)
       {
-        shell_network_check();
+        shell_network_check(uart_buffer);
       }
-      else if (strncmp(uart_buffer, "showuartflag", 13) == 0)
+      else if (strncmp(uart_buffer, "showuartflag", 12) == 0)
       {
         shell_uart_flag();
       }
-      else if (strncmp(uart_buffer, "i2ctest", 8) == 0)
+      else if (strncmp(uart_buffer, "i2ctest", 7) == 0)
       {
         shell_i2c_test();
       }
