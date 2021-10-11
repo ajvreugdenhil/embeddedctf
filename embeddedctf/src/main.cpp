@@ -21,6 +21,7 @@
 #endif
 
 #define UARTKEY "TODO"
+#define WELCOMEFLAG "ECTF{WCF}"
 
 #define BLINKLED LED_BUILTIN_AUX
 
@@ -35,6 +36,7 @@ void setup()
 {
   Serial.begin(57600);
   pinMode(BLINKLED, OUTPUT);
+  char* welcomeflag = WELCOMEFLAG;
   Serial.printf("An interesting function can be found at 0x%lx", ((unsigned long)(&print_bof_flag)));
 }
 
