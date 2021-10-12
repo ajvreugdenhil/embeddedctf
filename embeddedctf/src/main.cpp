@@ -5,6 +5,7 @@
 #include <WiFiClient.h>
 
 #define FLAGLESS 1
+#define VERSION "V1.1"
 
 #ifdef FLAGLESS
 #define BLINKFLAG "ECTF{PLACEHOLDER}"
@@ -13,15 +14,15 @@
 #define BOFFLAG "ECTF{PLACEHOLDER}"
 #define NETWORKFLAG "ECTF{PLACEHOLDER}"
 #else
-#define BLINKFLAG "ECTF{BLINK}"
-#define UARTFLAG "ECTF{UART}"
-#define UNDOCUMENTEDUARTFLAG "ECTF{UNDOC_UART}"
-#define BOFFLAG "ECTF{BOF}"
-#define NETWORKFLAG "ECTF{NW}"
+#define BLINKFLAG "ECTF{Embedded_d3v_is_just_f4ncy_blinking}"
+#define UARTFLAG "ECTF{Uart_is_love}"
+#define UNDOCUMENTEDUARTFLAG "ECTF{rtfm_with_sc3pticism}"
+#define BOFFLAG "ECTF{Bof_on_embedded!}"
+#define NETWORKFLAG "ECTF{my_s3cr3ts_are_not_5afe_for_you}"
 #endif
 
-#define UARTKEY "TODO"
-#define WELCOMEFLAG "ECTF{WCF}"
+#define UARTKEY "S3CRIT_UART_KEY"
+#define WELCOMEFLAG "ECTF{Strings_is_your_fri3nd}"
 
 #define BLINKLED LED_BUILTIN_AUX
 
@@ -36,8 +37,11 @@ void setup()
 {
   Serial.begin(57600);
   pinMode(BLINKLED, OUTPUT);
-  char* welcomeflag = WELCOMEFLAG;
-  Serial.printf("An interesting function can be found at 0x%lx", ((unsigned long)(&print_bof_flag)));
+  String welcomeflag = WELCOMEFLAG;
+  Serial.print("Version: ");
+  Serial.println(VERSION);
+  Serial.print("An interesting function can be found at 0x");
+  Serial.println((unsigned long)&print_bof_flag, HEX);
 }
 
 void tick_blink()
@@ -118,7 +122,7 @@ void shell_network_check(char *user_input)
 
 void shell_i2c_test()
 {
-  Serial.println("This part of the ctf is WIP");
+  Serial.println("This part of the ctf is WIP and not functioning");
 }
 
 char uart_buffer[127] = {0x41};
