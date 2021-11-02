@@ -1,11 +1,10 @@
 #include <Arduino.h>
 
+#ifdef SUPPORT_WIFI
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 #include <WiFiClient.h>
-
-#define FLAGLESS 1
-#define VERSION "V1.1"
+#endif
 
 #ifdef FLAGLESS
 #define BLINKFLAG "ECTF{PLACEHOLDER}"
@@ -15,14 +14,14 @@
 #define NETWORKFLAG "ECTF{PLACEHOLDER}"
 #else
 #define BLINKFLAG "ECTF{Embedded_d3v_is_just_f4ncy_blinking}"
-#define UARTFLAG "ECTF{Uart_is_love}"
+#define UARTFLAG "ECTF{Uart_1s_lov3_uart_1s_lif3}"
 #define UNDOCUMENTEDUARTFLAG "ECTF{rtfm_with_sc3pticism}"
-#define BOFFLAG "ECTF{Bof_on_embedded!}"
+#define BOFFLAG "ECTF{Bof_on_emb3dded!}"
 #define NETWORKFLAG "ECTF{my_s3cr3ts_are_not_5afe_for_you}"
 #endif
 
 #define UARTKEY "S3CRIT_UART_KEY"
-#define WELCOMEFLAG "ECTF{Strings_is_your_fri3nd}"
+#define WELCOMEFLAG "ECTF{Str1ngs_1s_y0ur_fri3nd}"
 
 #define BLINKLED LED_BUILTIN_AUX
 
@@ -39,9 +38,12 @@ void setup()
   pinMode(BLINKLED, OUTPUT);
   String welcomeflag = WELCOMEFLAG;
   Serial.print("Version: ");
-  Serial.println(VERSION);
+  Serial.println(ECTF_VERSION);
   Serial.print("An interesting function can be found at 0x");
   Serial.println((unsigned long)&print_bof_flag, HEX);
+#ifdef SUPPORT_WIFI
+  WiFi.softAPdisconnect(true);
+#endif
 }
 
 void tick_blink()
@@ -56,11 +58,9 @@ void shell_help()
 {
   Serial.println("Available commands:");
   Serial.println("help");
-  Serial.println("*networkcheck <ssid> <password>");
-  Serial.println("showuartflag");
-  Serial.println("*i2ctest");
-  Serial.println("");
-  Serial.println("commands marked with * may block");
+  Serial.println("uartflag");
+  Serial.println("networkcheck <ssid> <password>");
+  Serial.println("integritycheck");
 }
 
 void shell_uart_flag()
@@ -68,6 +68,7 @@ void shell_uart_flag()
   Serial.println(UARTFLAG);
 }
 
+#ifdef SUPPORT_WIFI
 void shell_network_check(char *user_input)
 {
   WiFi.disconnect(true);
@@ -78,16 +79,10 @@ void shell_network_check(char *user_input)
   char password[user_input_max];
   sscanf(user_input, "%s %s %s", ignored, ssid, password);
 
-  Serial.print("Connecting to '");
-  Serial.print(ssid);
-  Serial.print("' with password '");
-  Serial.print(password);
-  Serial.println("'");
-
   WiFi.begin(ssid, password);
   Serial.print("Connecting to AP");
 
-  int i = 0; // Easy way to timeout the connection
+  int i = 0;
   while ((WiFi.status() != WL_CONNECTED) && i < 60)
   {
     delay(500);
@@ -96,11 +91,11 @@ void shell_network_check(char *user_input)
   }
 
   Serial.println("");
-  Serial.print("Connected to WiFi network with IP Address: ");
-  Serial.println(WiFi.localIP());
 
   if (WiFi.status() == WL_CONNECTED)
   {
+    Serial.print("Connected to WiFi network with IP Address: ");
+    Serial.println(WiFi.localIP());
     WiFiClient client;
     HTTPClient http;
     Serial.println("Trying to contact remote server...");
@@ -109,7 +104,6 @@ void shell_network_check(char *user_input)
     char remote[remote_len];
     snprintf(remote, remote_len, "http://binpurple.student.fhict.nl?flag=%s", NETWORKFLAG);
     http.begin(client, remote);
-    // TODO: act like this request isn't entirely full of shit
     http.GET();
     Serial.println("Remote server seems to be offline.");
     WiFi.disconnect(true);
@@ -119,11 +113,24 @@ void shell_network_check(char *user_input)
     Serial.println("Could not connect!");
   }
 }
+#else
+void shell_network_check(char *user_input)
+{
+  Serial.println("ECTF was compiled without network support!");
+}
+#endif
 
-void shell_i2c_test()
+#ifdef SUPPORT_I2C
+void shell_i2c()
 {
   Serial.println("This part of the ctf is WIP and not functioning");
 }
+#else
+void shell_i2c()
+{
+  Serial.println("ECTF was compiled without I2C support!");
+}
+#endif
 
 char uart_buffer[127] = {0x41};
 int uart_buffer_len = 0;
@@ -150,13 +157,13 @@ void tick_uart()
       {
         shell_network_check(uart_buffer);
       }
-      else if (strncmp(uart_buffer, "showuartflag", 12) == 0)
+      else if (strncmp(uart_buffer, "uartflag", 9) == 0)
       {
         shell_uart_flag();
       }
-      else if (strncmp(uart_buffer, "i2ctest", 7) == 0)
+      else if (strncmp(uart_buffer, "integritycheck", 15) == 0)
       {
-        shell_i2c_test();
+        shell_i2c();
       }
       else if (uart_buffer_len < 2)
       {
@@ -164,7 +171,6 @@ void tick_uart()
       }
       else if (strcmp(uart_buffer, UARTKEY) == 0)
       {
-        Serial.print("\nCongrats on finding the undocumented command! Here's the flag: ");
         Serial.println(UNDOCUMENTEDUARTFLAG);
       }
       else
