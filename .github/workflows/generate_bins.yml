@@ -1,6 +1,9 @@
 name: PlatformIO CI
 
-on: [push]
+on: 
+  push:
+    tags:
+      - "v*.*.*"
 
 jobs:
   build:
@@ -31,12 +34,9 @@ jobs:
       working-directory: ./embeddedctf
       run: pio run -e nodemcuv2_flags -e nodemcuv2_flagless
 
-    - uses: actions/upload-artifact@v3
-      with:
-        name: nodemcuv2_with_flags
-        path: ./embeddedctf/.pio/build/nodemcuv2_flags/firmware.bin
-
-    - uses: actions/upload-artifact@v3
-      with:
-        name: nodemcuv2_without_flags
-        path: ./embeddedctf/.pio/build/nodemcuv2_flagless/firmware.bin
+    - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ./embeddedctf/.pio/build/nodemcuv2_flags/firmware.bin
+            ./embeddedctf/.pio/build/nodemcuv2_flagless/firmware.bin
