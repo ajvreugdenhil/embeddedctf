@@ -35,8 +35,8 @@ jobs:
       run: pio run -e nodemcuv2_flags -e nodemcuv2_flagless
 
     - name: Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            ./embeddedctf/.pio/build/nodemcuv2_flags/firmware.bin
-            ./embeddedctf/.pio/build/nodemcuv2_flagless/firmware.bin
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          ./embeddedctf/.pio/build/nodemcuv2_flags/firmware.bin
+          ./embeddedctf/.pio/build/nodemcuv2_flagless/firmware.bin
