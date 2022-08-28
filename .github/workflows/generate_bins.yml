@@ -34,8 +34,10 @@ jobs:
       working-directory: ./embeddedctf
       run: pio run -e nodemcuv2_flags -e nodemcuv2_flagless
 
-    - name: Rename bin files
+    - name: Rename flag bin file
       run: mv embeddedctf/.pio/build/nodemcuv2_flags/firmware.bin embeddedctf/.pio/build/nodemcuv2_flags_firmware.bin
+
+    - name: Rename flagless bin file
       run: mv embeddedctf/.pio/build/nodemcuv2_flagless/firmware.bin embeddedctf/.pio/build/nodemcuv2_flagless_firmware.bin
 
     - name: Release
